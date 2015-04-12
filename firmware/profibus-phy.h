@@ -5,6 +5,7 @@
 
 #include <stdint.h>
 
+#define PB_PHY_RTS_ALWAYS 1
 
 enum pb_phy_baud {
 	PB_PHY_BAUD_9600,

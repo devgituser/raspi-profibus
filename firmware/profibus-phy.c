@@ -93,7 +93,11 @@ struct pb_context {
 	bool tail_wait;
 	pb_notifier_t notifier;
 	enum pb_phy_baud baudrate;
-	enum pb_phy_rtsmode rtsmode;
+	#if PB_PHY_RTS_ALWAYS == 1
+		// here we don't need the flag
+	#else
+		enum pb_phy_rtsmode rtsmode;
+	#endif
 };
 
 static struct pb_context profibus;
@@ -101,6 +105,13 @@ static struct pb_context profibus;
 
 static void set_rts(bool on)
 {
+#if PB_PHY_RTS_ALWAYS == 1
+	if (on)
+		RTS_PORT |= (1 << RTS_BIT);
+	else
+		RTS_PORT &= ~(1 << RTS_BIT);
+	// enables the compiler to speed up
+#else
 	switch (profibus.rtsmode) {
 	default:
 	case PB_PHY_RTS_ALWAYS_LO:
@@ -122,6 +133,7 @@ static void set_rts(bool on)
 			RTS_PORT |= (1 << RTS_BIT);
 		break;
 	}
+#endif
 }
 
 static void set_activity_led(bool on)
@@ -405,7 +417,7 @@ void pb_set_rx_timeout(uint8_t ms)
 	irq_restore(sreg);
 }
 
-void pb_ms_tick(void)
+inline void pb_ms_tick(void)
 {
 	uint8_t sreg;
 
@@ -466,6 +478,9 @@ enum pb_phy_baud pb_get_baudrate(void)
 
 int8_t pb_set_rtsmode(enum pb_phy_rtsmode mode)
 {
+#if PB_PHY_RTS_ALWAYS == 1
+	return 0;
+#else
 	uint8_t sreg;
 
 	if (mode >= PB_PHY_RTS_NR_MODES)
@@ -477,6 +492,7 @@ int8_t pb_set_rtsmode(enum pb_phy_rtsmode mode)
 	irq_restore(sreg);
 
 	return 0;
+#endif
 }
 
 void pb_phy_init(void)

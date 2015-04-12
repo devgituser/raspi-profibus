@@ -5,7 +5,8 @@ NAME			:= cp-phy
 SRCS			:= checksum.c \
 			   main.c \
 			   profibus-phy.c \
-			   raspi-interface.c
+			   raspi-interface.c \
+			   power-fail.c
 
 # Project fuse bits
 LFUSE			:= 0xB7

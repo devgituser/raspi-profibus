@@ -9,6 +9,7 @@
 
 #include "profibus-phy.h"
 #include "raspi-interface.h"
+#include "power-fail.h"
 #include "util.h"
 
 #include <avr/io.h>
@@ -19,6 +20,7 @@
 ISR(TIMER1_COMPA_vect)
 {
 	pb_ms_tick();
+	pf_ms_tick();
 }
 
 static void systemtimer_init(void)
@@ -37,9 +39,12 @@ int main(void)
 {
 	pb_phy_init();
 	raspi_init();
+	powerfail_init();
 	systemtimer_init();
 
 	irq_enable();
-	while (1) {
+	while(1)
+	{
+		powerfail_cyc();
 	}
 }

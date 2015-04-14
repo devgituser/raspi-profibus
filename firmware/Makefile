@@ -61,7 +61,7 @@ MYSMARTUSB		= mysmartusb.py
 DOXYGEN			= doxygen$(BINEXT)
 
 V			:= @		# Verbose build:  make V=1
-O			:= s		# Optimize flag
+O			:= 3		# Optimize flag
 Q			:= $(V:1=)
 QUIET_CC		= $(Q:@=@$(ECHO) '     CC       '$@;)$(CC)
 QUIET_DEPEND		= $(Q:@=@$(ECHO) '     DEPEND   '$@;)$(CC)

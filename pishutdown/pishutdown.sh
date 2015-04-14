@@ -1,6 +1,6 @@
 #!/bin/sh
-SHTDN="/home/pi/pishutdown"
+SHTDN="home/pi/pishutdown"
 cd /
 cd $SHTDN
-sudo python pishutdown.py >> $SHTDN/logs/pi_logs
+sudo python pishutdown.py >> /$SHTDN/logs/pi_logs
 cd /

@@ -4,10 +4,14 @@
 import RPi.GPIO as gpio
 import os
 from datetime import datetime
+import time
+import threading
 
-pin = 7	# 	pin number of RPI header
+alert = 7	# 	pin number of RPI header = GPIO4
+alive = 22	# 	pin number of RPI header = GPIO25
 tol = 20	# ms 	time tolerance to detect alert
 cyc = 100 # ms	toggle cycle by power fail monitor
+tal = 100	# ms toggle time for alive pin
 
 def print_time(t,txt=""):	
 	print("%d-%02d-%02d__%02d:%02d:%02d %s"%(\
@@ -33,24 +37,48 @@ def check():
 		os.system('shutdown now -h')
 		exit()
 
+class KeepAlive(threading.Thread):
+	def __init__(self, pin_number, timeout):
+		threading.Thread.__init__(self) # needed for thread stuff
+		self.pin_nr = int(pin_number)
+		self.to = float(timeout)
+	
+	def prepare(self):
+		#gpio.setmode(gpio.BOARD)
+		gpio.setup(self.pin_nr, gpio.OUT) 
+	
+	def run(self):
+		i = 20 # for debugging, simulate non responsive rpi
+		while(1):
+			gpio.output(self.pin_nr, gpio.LOW)
+			time.sleep( self.to )
+			gpio.output(self.pin_nr, gpio.HIGH)
+			time.sleep( self.to )
+			i -= 1
+		print_time(atetime.now(), "rpi stopped alive toggle")
 
 #Set pin numbering to board numbering
 gpio.setmode(gpio.BOARD)
-gpio.setup(pin, gpio.IN) 
+gpio.setup(alert, gpio.IN) 
+
 
 boot = datetime.now()
 
 print_time(boot, "booted")
-print("Script running: %s"%str(os.path.basename(__file__)) )
+#print("Script running: %s"%str(os.path.basename(__file__)) )
 
 edge = [boot] # store any edge time here
 
+ka = KeepAlive(alive,float(tal)/1000)
+ka.prepare()
+ka.setDaemon(True)	# auto kills thread at end of script
+ka.start()
 
 while(1):
 	# watch for pin toggle
-	gpio.wait_for_edge(pin, gpio.FALLING) 
+	gpio.wait_for_edge(alert, gpio.FALLING) 
 	edge.append(datetime.now())
 	check()
-	gpio.wait_for_edge(pin, gpio.RISING) 
+	gpio.wait_for_edge(alert, gpio.RISING) 
 	edge.append(datetime.now())
 	check()
